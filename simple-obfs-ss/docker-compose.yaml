@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  simple-obfs-ss:
+    image: googolmo/simple-obfs-ss
+    ports:
+      - "8388:8388/tcp"
+      - "8388:8388/udp"
+    environment:
+      - METHOD=aes-256-gcm
+      - PASSWORD=9MLSpPmNt
+      - OBFS=tls
+      - FAILOVER=www.taobao.com
+    restart: always  

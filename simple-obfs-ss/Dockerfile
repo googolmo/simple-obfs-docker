@@ -1,9 +1,8 @@
-FROM alpine
-MAINTAINER Mo <googolmo@gmail.com>
+FROM shadowsocks/shadowsocks-libev:v3.2.1
+LABEL MAINTAINER="Mo <googolmo@gmail.com>"
 
-ENV SERVER_ADDR 0.0.0.0
-ENV OBFS http
-ENV ARGS=
+USER root
+
 ENV SIMPLE_OBFS_VER 0.0.5
 
 RUN set -ex && \
@@ -31,21 +30,31 @@ RUN set -ex && \
     ./configure --disable-documentation &&\
     make install && \
     runDeps="$( \
-		scanelf --needed --nobanner /usr/bin/obfs-* \
-			| awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-			| xargs -r apk info --installed \
-			| sort -u \
-	)" && \
+        scanelf --needed --nobanner /usr/bin/obfs-* \
+            | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+            | xargs -r apk info --installed \
+            | sort -u \
+    )" && \
     apk add --no-cache --virtual .run-deps2 \
         rng-tools \
         $runDeps && \
     apk del .build-deps && \
-    rm -rvf /tmp/*
+    rm -rf /tmp/*
 
+ENV OBFS http
+ENV FAILOVER www.taobao.com
 USER nobody
 
-CMD obfs-server -s $SERVER_ADDR \
-		-p 8400 \
-		--obfs $OBFS \
-		$ARGS
+CMD exec ss-server \
+      -s $SERVER_ADDR \
+      -p $SERVER_PORT \
+      -k ${PASSWORD:-$(hostname)} \
+      -m $METHOD \
+      -t $TIMEOUT \
+      --fast-open \
+      -d $DNS_ADDRS \
+      -u \
+      --plugin /usr/local/bin/obfs-server \
+      --plugin-opts obfs=$OBFS;obfs-host=$FAILOVER \
+      $ARGS
 
