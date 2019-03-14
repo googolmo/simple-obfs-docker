@@ -1,4 +1,4 @@
-FROM shadowsocks/shadowsocks-libev:v3.2.1
+FROM shadowsocks/shadowsocks-libev:v3.2.5
 LABEL MAINTAINER="Mo <googolmo@gmail.com>"
 
 USER root
